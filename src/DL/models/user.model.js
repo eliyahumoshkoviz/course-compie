@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import validator from 'validator'
 import bcrypt from 'bcryptjs'
 import { createToken } from "../../middleware/auth.js";
+import { taskModel } from "./task.model.js";
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -32,8 +33,11 @@ const userSchema = new mongoose.Schema({
             type: String,
             required: true,
         }
-    }]
-});
+    }],
+    avatar: {
+        type: Buffer
+    }
+}, { 'timestamps': true });
 
 userSchema.virtual('tasks', {
     ref: 'task',
@@ -47,14 +51,15 @@ userSchema.methods.toJSON = function () {
 
     delete userObject.password
     delete userObject.tokens
+    delete userObject.avatar
 
     return userObject
 }
 
 userSchema.methods.generateAuthToken = async function () {
-    const user = this;    
+    const user = this;
     const token = createToken({ _id: user._id.toString() })
-    user.tokens.push({token})
+    user.tokens.push({ token })
     await user.save()
     return token
 }
@@ -72,6 +77,12 @@ userSchema.statics.findByCredentials = async (email, password) => {
 userSchema.pre('save', async function (next) {
     const user = this;
     if (user.isModified('password')) user.password = await bcrypt.hash(user.password, 8)
+    next()
+})
+
+userSchema.pre('remove', async function (next) {
+    const user = this;
+    await taskModel.deleteMany({ 'owner': user._id })
     next()
 })
 
