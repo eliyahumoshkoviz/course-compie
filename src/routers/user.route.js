@@ -1,6 +1,7 @@
 import express from 'express';
 import { userModel } from '../DL/models/user.model.js';
 
+
 const router = express.Router();
 
 router.get("/", async (req, res) => {
@@ -16,8 +17,6 @@ router.get("/", async (req, res) => {
 router.get('/me', async (req, res) => {
     res.send(req.user)
 })
-
-
 
 
 router.patch('/', async (req, res) => {
@@ -44,6 +43,7 @@ router.delete('/', async (req, res) => {
         res.status(500).send({ error: error.message || error.toString() })
     }
 })
+
 
 export { router as userRoute };
 
