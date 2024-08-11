@@ -3,9 +3,29 @@ import { taskModel } from '../DL/models/task.model.js';
 
 const router = express.Router();
 
+
+// GET /tasks?completed=true
+// GET /tasks?limit=10&skip=20
+// GET /tasks?sortBy=createdAt:desc
 router.get('/', async (req, res) => {
+
+    const match = {};
+    if (req.query.cpmpleted) match.cpmpleted = req.query.cpmpleted === 'true';
+    const sort = {};
+    if (req.query.sortBy) {
+        const parts = req.query.sortBy.split(':')
+        sort[parts[0]] = parts[1] === 'desk' ? -1 : 1
+    }
     try {
-        await req.user.populate('tasks')
+        await req.user.populate({
+            "path": 'tasks',
+            match,
+            'options': {
+                'limit': parseInt(req.query.limit),
+                'skip': parseInt(req.query.skip),
+                sort
+            }
+        })
         res.send(req.user.tasks)
     } catch (error) {
         res.status(500).send({ error: error.message || error.toString() })

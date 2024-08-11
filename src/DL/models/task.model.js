@@ -2,7 +2,10 @@ import mongoose from "mongoose";
 
 const taskSchema = new mongoose.Schema({
     description: String,
-    cpmpleted: Boolean,
+    cpmpleted: {
+        type: Boolean,
+        default: false
+    },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
